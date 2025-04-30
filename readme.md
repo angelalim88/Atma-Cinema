@@ -9,7 +9,7 @@ Atma Cinema is a cinema app that allows users to view movie schedules, book tick
 - **Ticket Booking**: Users can select seats and proceed with ticket payment.
 
 ## Preview
-Here are some screenshots of the app:
+Here are some preview of the app:
 
 ### Landing Page
 <div style="display: flex; flex-wrap: wrap;">
