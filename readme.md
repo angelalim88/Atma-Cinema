@@ -13,21 +13,21 @@ Here are some screenshots of the app:
 
 ### Landing Page
 <div style="display: flex; flex-wrap: wrap;">
-  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/1.png" width="430" style="margin-right: 10px;" />
-  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/2.png" width="430" style="margin-right: 10px;" />
-  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/3.png" width="430" style="margin-right: 10px;" />
+  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/1.png" width="200" style="margin-right: 10px;" />
+  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/2.png" width="200" style="margin-right: 10px;" />
+  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/3.png" width="200" style="margin-right: 10px;" />
 </div>
 
 ### Movies
 <div style="display: flex; flex-wrap: wrap;">
-  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/4.png" width="430" style="margin-right: 10px;" />
-  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/5.png" width="430" style="margin-right: 10px;" />
-  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/6.png" width="430" style="margin-right: 10px;" />
+  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/4.png" width="200" style="margin-right: 10px;" />
+  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/5.png" width="200" style="margin-right: 10px;" />
+  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/6.png" width="200" style="margin-right: 10px;" />
 </div>
 
 ### Transaction
 <div style="display: flex; flex-wrap: wrap;">
-  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/7.png" width="430" style="margin-right: 10px;" />
-  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/8.png" width="430" style="margin-right: 10px;" />
-  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/9.png" width="430" style="margin-right: 10px;" />
+  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/7.png" width="200" style="margin-right: 10px;" />
+  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/8.png" width="200" style="margin-right: 10px;" />
+  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/9.png" width="200" style="margin-right: 10px;" />
 </div>
