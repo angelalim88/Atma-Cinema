@@ -8,23 +8,26 @@ Atma Cinema is a cinema app that allows users to view movie schedules, book tick
 - **Movie Details**: Displays detailed information about each movie, including genre, duration, and synopsis.
 - **Ticket Booking**: Users can select seats and proceed with ticket payment.
 
-## Mobile App
+## Preview
 Here are some screenshots of the app:
 
-![Start Page](https://github.com/angelalim88/Atma-Cinema/blob/main/images/1.png)
+### Landing Page
+<div style="display: flex; flex-wrap: wrap;">
+  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/1.png" width="430" style="margin-right: 10px;" />
+  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/2.png" width="430" style="margin-right: 10px;" />
+  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/3.png" width="430" style="margin-right: 10px;" />
+</div>
 
-![Now Playing](https://github.com/angelalim88/Atma-Cinema/blob/main/images/2.png)
+### Movies
+<div style="display: flex; flex-wrap: wrap;">
+  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/4.png" width="430" style="margin-right: 10px;" />
+  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/5.png" width="430" style="margin-right: 10px;" />
+  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/6.png" width="430" style="margin-right: 10px;" />
+</div>
 
-![Coming Soon](https://github.com/angelalim88/Atma-Cinema/blob/main/images/3.png)
-
-![Movie Detail](https://github.com/angelalim88/Atma-Cinema/blob/main/images/4.png)
-
-![Review Page](https://github.com/angelalim88/Atma-Cinema/blob/main/images/5.png)
-
-![Nearby Cinema](https://github.com/angelalim88/Atma-Cinema/blob/main/images/6.png)
-
-![Select Seat](https://github.com/angelalim88/Atma-Cinema/blob/main/images/7.png)
-
-![Payment Page](https://github.com/angelalim88/Atma-Cinema/blob/main/images/8.png)
-
-![My Ticket](https://github.com/angelalim88/Atma-Cinema/blob/main/images/9.png)
+### Transaction
+<div style="display: flex; flex-wrap: wrap;">
+  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/7.png" width="430" style="margin-right: 10px;" />
+  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/8.png" width="430" style="margin-right: 10px;" />
+  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/9.png" width="430" style="margin-right: 10px;" />
+</div>
