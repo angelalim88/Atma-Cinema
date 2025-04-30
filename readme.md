@@ -20,7 +20,7 @@ Here are some preview of the app:
 
 ### Movies
 <div style="display: flex; flex-wrap: wrap;">
-  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/4.png" width="250" style="margin-right: 10px;" />
+  <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/4-1.png" width="250" style="margin-right: 10px;" />
   <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/5.png" width="250" style="margin-right: 10px;" />
   <img src="https://github.com/angelalim88/Atma-Cinema/blob/main/images/6.png" width="250" style="margin-right: 10px;" />
 </div>
