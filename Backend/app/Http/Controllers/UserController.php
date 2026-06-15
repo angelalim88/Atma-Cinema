@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Support\AssetUrl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -12,6 +13,13 @@ use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
+    private function transformUser(User $user): User
+    {
+        $user->profile_picture = AssetUrl::for('profile_pictures', $user->profile_picture, true);
+
+        return $user;
+    }
+
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -50,7 +58,7 @@ class UserController extends Controller
 
             return response()->json([
                 'message' => 'User registered successfully',
-                'user' => $user,
+                'user' => $this->transformUser($user),
                 'token' => $token
             ], 200);
         } catch (\Exception $e) {
@@ -77,18 +85,22 @@ class UserController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json(['message' => 'Login successful', 'token' => $token, 'user' => $user], 200);
+        return response()->json([
+            'message' => 'Login successful',
+            'token' => $token,
+            'user' => $this->transformUser($user),
+        ], 200);
     }
 
     public function index()
     {
-        return response()->json(User::all(), 200);
+        return response()->json(User::all()->map(fn (User $user) => $this->transformUser($user)), 200);
     }
 
     public function store(Request $request)
     {
         $user = User::create($request->all());
-        return response()->json($user, 201);
+        return response()->json($this->transformUser($user), 201);
     }
 
     public function show($id)
@@ -97,7 +109,7 @@ class UserController extends Controller
         if (!$user) {
             return response()->json(['message' => 'User not found'], 404);
         }
-        return response()->json($user, 200);
+        return response()->json($this->transformUser($user), 200);
     }
 
     public function update(Request $request)
@@ -129,7 +141,7 @@ class UserController extends Controller
                 return response()->json(['errors' => $validator->errors()], 422);
             }
             
-            $profilePicturePath = $user->profile_picture; 
+            $filename = $user->profile_picture;
             if ($request->hasFile('profile_picture')) {
                 $userId = $user->id_user;
                 $filename = $userId . '_ProfPic.' . $request->file('profile_picture')->getClientOriginalExtension();
@@ -160,7 +172,7 @@ class UserController extends Controller
 
             return response()->json([
                 'message' => 'Profile updated successfully',
-                'user' => $user
+                'user' => $this->transformUser($user)
             ], 200);
 
         }catch (\Exception $e){
@@ -179,4 +191,3 @@ class UserController extends Controller
         return response()->json(['message' => 'User deleted'], 200);
     }
 }
-

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Tiket;
 use App\Models\User;
+use App\Support\AssetUrl;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
@@ -21,11 +22,10 @@ class TiketController extends Controller
 
         $tikets->each(function($tiket) {
             if ($tiket->penayangan && $tiket->penayangan->film) {
-                $posterUrl = $tiket->penayangan->film->poster_1;
-
-                if (strpos($posterUrl, 'http://10.0.2.2:8000/storage/poster_1/') === false) {
-                    $tiket->penayangan->film->poster_1 = 'http://10.0.2.2:8000/storage/poster_1/' . $posterUrl;
-                }
+                $tiket->penayangan->film->poster_1 = AssetUrl::for(
+                    'poster_1',
+                    $tiket->penayangan->film->poster_1
+                );
             }
         });
         return response()->json($tikets, 200);

@@ -17,8 +17,11 @@ class TicketPdfPage extends StatelessWidget {
 
   Future<pw.Document> generatePdf() async {
     final pdf = pw.Document();
-    String formattedDate = DateFormat('dd-MM-yyyy').format(ticket.penayangan!.tanggal_tayang!);
-    final image = await loadImage('${ticket.film!.poster_1}'.isNotEmpty ? '${ticket.film!.poster_1}' : 'https://via.placeholder.com/200x300');
+    String formattedDate =
+        DateFormat('dd-MM-yyyy').format(ticket.penayangan!.tanggal_tayang!);
+    final image = await loadImage('${ticket.film!.poster_1}'.isNotEmpty
+        ? '${ticket.film!.poster_1}'
+        : 'https://via.placeholder.com/200x300');
 
     // Load logo image
     final logoImage = pw.MemoryImage(
@@ -46,7 +49,8 @@ class TicketPdfPage extends StatelessWidget {
                 pw.Container(
                   decoration: pw.BoxDecoration(
                     color: PdfColors.black,
-                    borderRadius: pw.BorderRadius.vertical(top: pw.Radius.circular(15)),
+                    borderRadius:
+                        pw.BorderRadius.vertical(top: pw.Radius.circular(15)),
                   ),
                   padding: pw.EdgeInsets.all(20),
                   child: pw.Row(
@@ -54,7 +58,7 @@ class TicketPdfPage extends StatelessWidget {
                     children: [
                       pw.Image(logoImage, width: 80, height: 40),
                       pw.Text(
-                        'E-Ticket Atma Cinema',
+                        'Cineplex E-Ticket',
                         style: pw.TextStyle(
                           fontSize: 24,
                           color: PdfColors.amber500,
@@ -65,19 +69,19 @@ class TicketPdfPage extends StatelessWidget {
                   ),
                 ),
                 pw.Container(
-                  child:  pw.Expanded(
-                        child: pw.Container(
-                          height: 2,
-                          color: PdfColors.amber500,
-                          margin: pw.EdgeInsets.symmetric(horizontal: 10),
-                        ),
-                      ),
-                )
-                ,
+                  child: pw.Expanded(
+                    child: pw.Container(
+                      height: 2,
+                      color: PdfColors.amber500,
+                      margin: pw.EdgeInsets.symmetric(horizontal: 10),
+                    ),
+                  ),
+                ),
 
                 // Movie Details Section
                 pw.Container(
-                  padding: pw.EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                  padding:
+                      pw.EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                   child: pw.Row(
                     children: [
                       // Left side - Poster
@@ -121,12 +125,16 @@ class TicketPdfPage extends StatelessWidget {
                               ),
                             ),
                             pw.SizedBox(height: 15),
-                            _buildInfoRow('Bioskop', '${ticket.bioskop!.namaBioskop}'),
+                            _buildInfoRow(
+                                'Bioskop', '${ticket.bioskop!.namaBioskop}'),
                             _buildInfoRow('Tanggal', formattedDate),
-                            _buildInfoRow('Jam', '${ticket.sesi!.jam_mulai} WIB'),
-                            _buildInfoRow('Studio', '${ticket.studio!.nama_studio}'),
-                            _buildInfoRow('Kursi', '${ticket.nomorKursi}'), 
-                            _buildInfoRow('Harga', 'Rp ${ticket.penayangan!.harga_tiket}'), 
+                            _buildInfoRow(
+                                'Jam', '${ticket.sesi!.jam_mulai} WIB'),
+                            _buildInfoRow(
+                                'Studio', '${ticket.studio!.nama_studio}'),
+                            _buildInfoRow('Kursi', '${ticket.nomorKursi}'),
+                            _buildInfoRow('Harga',
+                                'Rp ${ticket.penayangan!.harga_tiket}'),
                           ],
                         ),
                       ),
@@ -212,7 +220,7 @@ class TicketPdfPage extends StatelessWidget {
                           ),
                           pw.SizedBox(height: 100),
                           pw.Text(
-                            'Thank you for choosing Atma Cinema!',
+                            'Thank you for choosing Cineplex!',
                             style: pw.TextStyle(
                               fontSize: 16,
                               fontWeight: pw.FontWeight.bold,
@@ -274,7 +282,8 @@ class TicketPdfPage extends StatelessWidget {
   }
 
   Future<pw.ImageProvider> loadImage(String imageUrl) async {
-    final ByteData data = await NetworkAssetBundle(Uri.parse(imageUrl)).load('');
+    final ByteData data =
+        await NetworkAssetBundle(Uri.parse(imageUrl)).load('');
     final Uint8List bytes = data.buffer.asUint8List();
     return pw.MemoryImage(bytes);
   }

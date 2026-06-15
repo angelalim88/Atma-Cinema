@@ -6,7 +6,7 @@ import 'package:flutter_application_1/setting/client.dart';
 
 class Studioclient {
   static final String url = constantURL;
-  static final String endpoint = '/public/api/studio';
+  static final String endpoint = '/api/studio';
 
   Future<Map<String, dynamic>> fetchById(int id) async {
     try {

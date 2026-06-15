@@ -1,9 +1,83 @@
 import 'package:flutter/material.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:flutter_application_1/client/FilmClient.dart';
+import 'package:flutter_application_1/data/film.dart';
 import 'package:flutter_application_1/view/loginRegister_view/login.dart';
 import 'package:flutter_application_1/view/loginRegister_view/register.dart';
 
-class StartPageView extends StatelessWidget {
+class StartPageView extends StatefulWidget {
   const StartPageView({super.key});
+
+  @override
+  State<StartPageView> createState() => _StartPageViewState();
+}
+
+class _StartPageViewState extends State<StartPageView> {
+  late final Future<List<Film>> _filmsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _filmsFuture = FilmClient().fetchAll();
+  }
+
+  Widget _buildPoster(Film film) {
+    final posterUrl = film.poster_1;
+
+    if (posterUrl == null || posterUrl.isEmpty) {
+      return Container(
+        width: 300,
+        height: 300,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(30),
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFCC434), Color(0xFF2A2A2A)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              film.judul ?? 'Now Playing',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(30),
+      child: Image.network(
+        posterUrl,
+        width: 300,
+        height: 300,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            width: 300,
+            height: 300,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(30),
+              color: const Color(0xFF2A2A2A),
+            ),
+            child: const Icon(
+              Icons.local_movies,
+              color: Colors.white,
+              size: 56,
+            ),
+          );
+        },
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +87,7 @@ class StartPageView extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo and "Premier Now!" Text
+            // Logo and "Now Playing!" Text
             Padding(
               padding: const EdgeInsets.only(top: 20),
               child: Column(
@@ -36,9 +110,9 @@ class StartPageView extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 10),
-                  // Center-aligned "Premier Now!" text
+                  // Center-aligned "Now Playing!" text
                   const Text(
-                    'Premier Now!',
+                    'Now Playing!',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,
@@ -50,17 +124,65 @@ class StartPageView extends StatelessWidget {
               ),
             ),
 
-            // Main Image
+            // Main Carousel
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(30),
-                child: Image.network(
-                  'https://www.pearlanddean.com/wp-content/uploads/2024/11/transformers_one_ver7-15.jpg',
-                  width: 300,
-                  height: 300,
-                  fit: BoxFit.cover,
-                ),
+              child: FutureBuilder<List<Film>>(
+                future: _filmsFuture,
+                builder: (context, snapshot) {
+                  final nowPlaying = snapshot.data
+                          ?.where((film) => film.status == 'Now Playing')
+                          .toList() ??
+                      [];
+
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Container(
+                      width: 300,
+                      height: 300,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(30),
+                        color: const Color(0xFF2A2A2A),
+                      ),
+                      child: const CircularProgressIndicator(
+                        color: Color(0xFFFCC434),
+                      ),
+                    );
+                  }
+
+                  if (nowPlaying.isEmpty) {
+                    return Container(
+                      width: 300,
+                      height: 300,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(30),
+                        color: const Color(0xFF2A2A2A),
+                      ),
+                      child: const Text(
+                        'Now Playing',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    );
+                  }
+
+                  return CarouselSlider.builder(
+                    itemCount: nowPlaying.length,
+                    options: CarouselOptions(
+                      height: 300,
+                      viewportFraction: 0.8,
+                      autoPlay: true,
+                      enlargeCenterPage: true,
+                    ),
+                    itemBuilder: (context, index, realIndex) {
+                      return _buildPoster(nowPlaying[index]);
+                    },
+                  );
+                },
               ),
             ),
 

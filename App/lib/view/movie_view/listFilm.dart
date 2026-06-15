@@ -135,13 +135,41 @@ class NarrowLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FilmList(
+    return FilmGrid(
       films: films,
       onFilmTap: (film) => Navigator.of(context).push(
         MaterialPageRoute(
           builder: (context) => FilmDetail(film: film, userData: userData),
         ),
       ),
+    );
+  }
+}
+
+class FilmGrid extends StatelessWidget {
+  final List<Film> films;
+  final void Function(Film) onFilmTap;
+
+  const FilmGrid({super.key, required this.films, required this.onFilmTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 14,
+        mainAxisSpacing: 18,
+        childAspectRatio: 0.52,
+      ),
+      itemCount: films.length,
+      itemBuilder: (context, index) {
+        final film = films[index];
+        return GestureDetector(
+          onTap: () => onFilmTap(film),
+          child: _FilmCard(film: film),
+        );
+      },
     );
   }
 }
@@ -196,83 +224,100 @@ class FilmList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       itemCount: films.length,
       itemBuilder: (context, index) {
         final film = films[index];
         return GestureDetector(
           onTap: () => onFilmTap(film),
-          child: _buildFilmItem(film),
+          child: _FilmCard(
+            film: film,
+            posterHeight: 250,
+            titleFontSize: 16,
+          ),
         );
       },
     );
   }
+}
 
-  Widget _buildFilmItem(Film film) {
+class _FilmCard extends StatelessWidget {
+  final Film film;
+  final double posterHeight;
+  final double titleFontSize;
+
+  const _FilmCard({
+    required this.film,
+    this.posterHeight = 220,
+    this.titleFontSize = 15,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8),
-        color: Colors.black.withOpacity(0),
+        borderRadius: BorderRadius.circular(14),
+        color: const Color.fromARGB(255, 26, 26, 26),
+        border: Border.all(color: Colors.white10),
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.center, // Centers all children horizontally
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Film Poster
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              film.poster_1 ?? '',
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: 250, // Adjusted height for poster
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                film.poster_1 ?? '',
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: posterHeight,
+                errorBuilder: (context, error, stackTrace) => Container(
+                  color: const Color(0xFFFCC434),
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.movie_creation_outlined,
+                    color: Colors.black,
+                    size: 34,
+                  ),
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: 8),
-
-          // Film Title
+          const SizedBox(height: 10),
           Text(
             film.judul ?? '',
-            style: const TextStyle(
+            style: TextStyle(
               color: lightColor,
-              fontSize: 16,
+              fontSize: titleFontSize,
               fontWeight: FontWeight.bold,
             ),
-            maxLines: 1,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center, // Ensures text is centered
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
-
-          // Ratings Row
           Row(
-            mainAxisAlignment: MainAxisAlignment.center, // Centers the row
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(Icons.star, size: 16, color: Colors.amber),
               const SizedBox(width: 4),
               Text(
                 (film.rating ?? 0.0).toStringAsFixed(1),
-                style: const TextStyle(color: Colors.white, fontSize: 14),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                "(100)", // Placeholder for reviews count
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
+                style: const TextStyle(color: Colors.white, fontSize: 13),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-
-          // Film Genre
+          const SizedBox(height: 6),
           Text(
             film.genre ?? '',
             style: const TextStyle(
               color: Colors.grey,
-              fontSize: 14,
+              fontSize: 13,
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center, // Ensures text is centered
+            textAlign: TextAlign.center,
           ),
         ],
       ),

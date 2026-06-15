@@ -7,7 +7,7 @@ import 'package:flutter_application_1/setting/client.dart';
 
 class TicketClient {
   static final String url = constantURL;
-  static final String endpoint = '/public/api/tikets';
+  static final String endpoint = '/api/tikets';
 
   Future<List<Ticket>> fetchOnlyUsers(id_user) async {
     try {

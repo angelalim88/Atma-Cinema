@@ -5,7 +5,7 @@ import 'package:flutter_application_1/setting/client.dart';
 
 class Menuclient {
   static final String baseUrl = constantURL;
-  static final String endpoint = '/public/api/menus';
+  static final String endpoint = '/api/menus';
 
   Future<List<Fnb>> fetchMenus() async {
     final response = await http.get(Uri.parse(protocol + baseUrl + endpoint));
@@ -19,4 +19,3 @@ class Menuclient {
     }
   }
 }
-

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Review;
+use App\Support\AssetUrl;
 use Illuminate\Http\Request;
 
 class ReviewController extends Controller
@@ -24,11 +25,11 @@ class ReviewController extends Controller
         // Modifikasi URL profile_picture untuk setiap review
         $reviews = $reviews->map(function ($review) {
             if ($review->tiket->user->profile_picture) {
-                // Check if the URL is already complete
-                if (!str_starts_with($review->tiket->user->profile_picture, 'http://10.0.2.2:8000/')) {
-                    $review->tiket->user->profile_picture =
-                        'http://10.0.2.2:8000/storage/profile_pictures/' . $review->tiket->user->profile_picture;
-                }
+                $review->tiket->user->profile_picture = AssetUrl::for(
+                    'profile_pictures',
+                    $review->tiket->user->profile_picture,
+                    true
+                );
             }
             return $review;
         });

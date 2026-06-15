@@ -6,7 +6,6 @@ import 'package:flutter_application_1/view/ticket_view/ticketView.dart';
 import 'package:flutter_application_1/view/profile_view/profile.dart';
 import 'package:flutter_application_1/view/movie_view/listFilm.dart';
 import 'package:flutter_application_1/view/home_view/location.dart';
-import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
 import 'package:flutter_application_1/client/FilmClient.dart';
 import 'package:flutter_application_1/client/MenuClient.dart';
 import 'package:flutter_application_1/data/fnb.dart';
@@ -29,15 +28,20 @@ final searchKeywordProvider = StateProvider<String>((ref) => '');
 
 class HomeView extends ConsumerStatefulWidget {
   final Map<String, dynamic> userData;
+  final int initialIndex;
 
-  const HomeView({super.key, required this.userData});
+  const HomeView({
+    super.key,
+    required this.userData,
+    this.initialIndex = 0,
+  });
 
   @override
   _HomeViewState createState() => _HomeViewState();
 }
 
 class _HomeViewState extends ConsumerState<HomeView> {
-  late PersistentTabController _controller;
+  int _selectedIndex = 0;
   String location = "No location detected";
   double currentPage = 0;
   late Future<List<Fnb>> _fnbs;
@@ -46,12 +50,13 @@ class _HomeViewState extends ConsumerState<HomeView> {
   @override
   void initState() {
     super.initState();
-    _controller = PersistentTabController(initialIndex: 0);
+    _selectedIndex = widget.initialIndex;
     _fnbs = Menuclient().fetchMenus();
     _loadLocationFromPreferences();
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.amber, // Warna background status bar
-      statusBarIconBrightness: Brightness.dark, // Warna ikon status bar (dark untuk ikon gelap)
+      statusBarIconBrightness:
+          Brightness.dark, // Warna ikon status bar (dark untuk ikon gelap)
     ));
   }
 
@@ -69,6 +74,86 @@ class _HomeViewState extends ConsumerState<HomeView> {
     super.dispose();
   }
 
+  Widget _buildPosterCard(Film film,
+      {double width = 200, double height = 280}) {
+    final posterUrl = film.poster_1;
+
+    if (posterUrl == null || posterUrl.isEmpty) {
+      return Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFCC434), Color(0xFF1E1E1E)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.local_movies, color: Colors.white, size: 42),
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text(
+                film.judul ?? 'Movie',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        image: DecorationImage(
+          image: NetworkImage(posterUrl),
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuAvatar(Fnb item) {
+    final imageUrl = item.gambar;
+
+    if (imageUrl == null || imageUrl.isEmpty) {
+      return Container(
+        width: 100,
+        height: 100,
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          color: Color(0xFFFCC434),
+        ),
+        child: const Icon(Icons.fastfood, color: Colors.black, size: 36),
+      );
+    }
+
+    return Container(
+      width: 100,
+      height: 100,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        image: DecorationImage(
+          image: NetworkImage(imageUrl),
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+  }
+
   List<Widget> _buildScreens() {
     return [
       _buildHomeScreen(),
@@ -78,31 +163,23 @@ class _HomeViewState extends ConsumerState<HomeView> {
     ];
   }
 
-  List<PersistentBottomNavBarItem> _navBarsItems() {
+  List<BottomNavigationBarItem> _navBarsItems() {
     return [
-      PersistentBottomNavBarItem(
+      const BottomNavigationBarItem(
         icon: Icon(Icons.home),
-        title: ("Home"),
-        activeColorPrimary: Colors.amber,
-        inactiveColorPrimary: Colors.white,
+        label: "Home",
       ),
-      PersistentBottomNavBarItem(
+      const BottomNavigationBarItem(
         icon: Icon(Icons.confirmation_number),
-        title: ("Ticket"),
-        activeColorPrimary: Colors.amber,
-        inactiveColorPrimary: Colors.white,
+        label: "Ticket",
       ),
-      PersistentBottomNavBarItem(
+      const BottomNavigationBarItem(
         icon: Icon(Icons.movie),
-        title: ("Movie"),
-        activeColorPrimary: Colors.amber,
-        inactiveColorPrimary: Colors.white,
+        label: "Movie",
       ),
-      PersistentBottomNavBarItem(
+      const BottomNavigationBarItem(
         icon: Icon(Icons.person),
-        title: ("Profile"),
-        activeColorPrimary: Colors.amber,
-        inactiveColorPrimary: Colors.white,
+        label: "Profile",
       ),
     ];
   }
@@ -110,7 +187,6 @@ class _HomeViewState extends ConsumerState<HomeView> {
   Widget _buildHomeScreen() {
     final filmsAsync = ref.watch(listFilmProvider);
     final menusAsync = ref.watch(listMenuProvider);
-    final keyword = ref.watch(searchKeywordProvider);
     return SafeArea(
       child: Scaffold(
         backgroundColor: Colors.black,
@@ -247,6 +323,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
           data: (films) {
             // Filter films based on the search keyword
             final keyword = ref.watch(searchKeywordProvider);
+            final nowPlayingFilms =
+                films.where((film) => film.status == 'Now Playing').toList();
             final filteredFilms = films.where((film) {
               return film.judul!.toLowerCase().contains(keyword.toLowerCase());
             }).toList();
@@ -296,17 +374,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                             child: Column(
                               children: [
                                 // Film Poster
-                                Container(
-                                  width: 150,
-                                  height: 210,
-                                  decoration: BoxDecoration(
-                                    image: DecorationImage(
-                                      image: NetworkImage(film.poster_1!),
-                                      fit: BoxFit.cover,
-                                    ),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
+                                _buildPosterCard(film, width: 150, height: 210),
                                 const SizedBox(height: 5),
                                 // Film Details
                                 SizedBox(
@@ -407,7 +475,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                       SizedBox(
                         height: 380,
                         child: CarouselSlider.builder(
-                          itemCount: filteredFilms.length,
+                          itemCount: nowPlayingFilms.length,
                           options: CarouselOptions(
                             height: 450,
                             aspectRatio: 16 / 9,
@@ -422,7 +490,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
                             },
                           ),
                           itemBuilder: (context, index, realIndex) {
-                            final film = films[index % films.length];
+                            final film =
+                                nowPlayingFilms[index % nowPlayingFilms.length];
                             return GestureDetector(
                               onTap: () {
                                 Navigator.of(context).push(
@@ -434,17 +503,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                               },
                               child: Column(
                                 children: [
-                                  Container(
-                                    width: 200,
-                                    height: 280,
-                                    decoration: BoxDecoration(
-                                      image: DecorationImage(
-                                        image: NetworkImage(film.poster_1!),
-                                        fit: BoxFit.cover,
-                                      ),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                  ),
+                                  _buildPosterCard(film),
                                   const SizedBox(height: 5),
                                   SizedBox(
                                     width: 170,
@@ -517,7 +576,8 @@ class _HomeViewState extends ConsumerState<HomeView> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => ListFnbView(), // Updated constructor parameter
+                                    builder: (context) =>
+                                        ListFnbView(), // Updated constructor parameter
                                   ),
                                 );
                               },
@@ -552,18 +612,7 @@ class _HomeViewState extends ConsumerState<HomeView> {
                                           horizontal: 8.0),
                                       child: Column(
                                         children: [
-                                          Container(
-                                            width: 100,
-                                            height: 100,
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              image: DecorationImage(
-                                                image: NetworkImage(
-                                                    menu[i].gambar!),
-                                                fit: BoxFit.cover,
-                                              ),
-                                            ),
-                                          ),
+                                          _buildMenuAvatar(menu[i]),
                                           const SizedBox(height: 10),
                                           Text(
                                             menu[i].nama!,
@@ -601,15 +650,23 @@ class _HomeViewState extends ConsumerState<HomeView> {
 
   @override
   Widget build(BuildContext context) {
-    return PersistentTabView(
-      context,
-      controller: _controller,
-      screens: _buildScreens(),
-      items: _navBarsItems(),
-      backgroundColor: Colors.black,
-      navBarStyle: NavBarStyle.style6,
-      decoration: NavBarDecoration(
-        colorBehindNavBar: Colors.black,
+    return Scaffold(
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _buildScreens(),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
+        items: _navBarsItems(),
+        backgroundColor: Colors.black,
+        selectedItemColor: Colors.amber,
+        unselectedItemColor: Colors.white,
+        type: BottomNavigationBarType.fixed,
       ),
     );
   }

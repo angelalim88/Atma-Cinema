@@ -5,7 +5,7 @@ import 'package:flutter_application_1/setting/client.dart';
 
 class BioskopClient {
   static final String baseUrl = constantURL;
-  static final String endpoint = '/public/api/bioskop';
+  static final String endpoint = '/api/bioskop';
 
   Future<List<Bioskop>> fetchBioskops() async {
     final response = await http.get(Uri.parse(protocol + baseUrl + endpoint));

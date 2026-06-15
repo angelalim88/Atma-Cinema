@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/view/home_view/home.dart';
 import 'package:flutter_application_1/data/penayangan.dart';
 import 'package:flutter_application_1/utilities/constant.dart';
-import 'package:flutter_application_1/view/movie_view/listFilm.dart';
 import 'package:flutter_application_1/client/TicketClient.dart';
 import 'package:flutter_application_1/client/TransaksiClient.dart';
 import 'package:flutter_application_1/client/PenayanganClient.dart';
@@ -72,22 +72,22 @@ class _PaymentSuccessState extends State<PaymentSuccess> {
             backgroundColor: Colors.black,
           ),
           body: FutureBuilder<void>(
-          future: _initDataFuture, // Future yang akan ditunggu
-          builder: (context, snapshot) {
-            // Status loading
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            }
-            // Jika terjadi error
-            else if (snapshot.hasError) {
-              return _failedWidget(snapshot.error);
-            }
-            // Jika selesai dan sukses
-            else {
-              return _successWidget();
-            }
-          },
-        ),
+            future: _initDataFuture, // Future yang akan ditunggu
+            builder: (context, snapshot) {
+              // Status loading
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              }
+              // Jika terjadi error
+              else if (snapshot.hasError) {
+                return _failedWidget(snapshot.error);
+              }
+              // Jika selesai dan sukses
+              else {
+                return _successWidget();
+              }
+            },
+          ),
           bottomNavigationBar: _bottomWidget()),
     );
   }
@@ -174,14 +174,15 @@ class _PaymentSuccessState extends State<PaymentSuccess> {
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: ElevatedButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => FilmListView(
-                    userData: widget.userData,
+              Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HomeView(
+                      userData: widget.userData,
+                      initialIndex: 1,
+                    ),
                   ),
-                ),
-              );
+                  (route) => false);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.amber,

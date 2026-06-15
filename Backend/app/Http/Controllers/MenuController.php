@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Menu;
+use App\Support\AssetUrl;
 use Illuminate\Http\Request;
 
 class MenuController extends Controller
@@ -11,8 +12,7 @@ class MenuController extends Controller
     {
         $menus = Menu::all();
         $menus->map(function ($menu) {
-            // Mengubah path gambar menjadi URL yang bisa diakses
-            $menu->gambar = 'http://10.0.2.2:8000/storage/menu/' . $menu->gambar;
+            $menu->gambar = AssetUrl::for('menu', $menu->gambar, true);
             
             // Mengonversi harga ke double
             $menu->harga = (double) $menu->harga;
@@ -71,7 +71,7 @@ class MenuController extends Controller
             return response()->json(['message' => 'Menu not found'], 404);
         }
 
-        $menu->gambar = 'http://10.0.2.2:8000/storage/menu/' . $menu->gambar;
+        $menu->gambar = AssetUrl::for('menu', $menu->gambar, true);
         $menu->harga = (double) $menu->harga;
 
         return response()->json($menu, 200);
@@ -79,7 +79,7 @@ class MenuController extends Controller
 
     public function show(Menu $menu)
     {
-        $menu->gambar = 'http://10.0.2.2:8000/storage/menu/' . $menu->gambar;
+        $menu->gambar = AssetUrl::for('menu', $menu->gambar, true);
         $menu->harga = (double) $menu->harga;
 
         return response()->json($menu, 200);

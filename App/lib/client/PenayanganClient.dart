@@ -6,9 +6,9 @@ import 'package:flutter_application_1/setting/client.dart';
 
 class PenayanganClient {
   static final String url = constantURL;
-  static final String endpoint = '/public/api/searchPenayangan';
-  static final String endpoint2 = '/public/api/penayanganbyid';
-  static final String endpoint3 = '/public/api/penayangans';
+  static final String endpoint = '/api/searchPenayangan';
+  static final String endpoint2 = '/api/penayanganbyid';
+  static final String endpoint3 = '/api/penayangans';
 
   Future<Map<String, dynamic>> fetchPenayangan({
     required int id_film,
@@ -18,7 +18,7 @@ class PenayanganClient {
   }) async {
     try {
       final response = await http.post(
-        Uri.http(url, '/public/api/searchPenayangan'),
+        Uri.http(url, '/api/searchPenayangan'),
         headers: {"Content-Type": "application/json"},
         body: json.encode({
           'id_film': id_film,

@@ -7,13 +7,13 @@ import 'package:flutter_application_1/setting/client.dart';
 import 'package:flutter_application_1/client/TicketClient.dart';
 
 class ReviewClient {
-  static final String url = "https://cinema88.fun"; // Pastikan ada "http://"
-  static final String endpoint = '/public/api/reviews';
+  static final String url = constantURL;
+  static final String endpoint = '/api/reviews';
 
   Future<List<Review>> fetchByFilmId(int filmId) async {
     try {
       final response = await http.get(
-        Uri.parse('$url$endpoint/$filmId'),
+        Uri.parse('$protocol$url$endpoint/$filmId'),
       );
       if (response.statusCode == 200) {
         List<dynamic> data = json.decode(response.body);
@@ -30,7 +30,7 @@ class ReviewClient {
     try {
       print("Tiket Id: ${tiketId}");
       final response = await http.post(
-        Uri.parse('$url$endpoint'),
+        Uri.parse('$protocol$url$endpoint'),
         headers: {"Content-Type": "application/json"},
         body: json.encode({
           "id_tiket": tiketId,

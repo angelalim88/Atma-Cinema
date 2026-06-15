@@ -7,7 +7,7 @@ import 'package:flutter_application_1/setting/client.dart';
 
 class Sesiclient {
   static final String url = constantURL;
-  static final String endpoint = '/public/api/sesis';
+  static final String endpoint = '/api/sesis';
 
   Future<List<Sesi>> fetchAll() async {
     try {

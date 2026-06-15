@@ -6,7 +6,6 @@ import 'package:flutter_application_1/data/bioskop.dart';
 import 'package:flutter_application_1/data/film.dart';
 import 'package:flutter_application_1/client/BioskopClient.dart';
 import 'package:flutter_application_1/view/movie_view/selectSeat.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SelectCinema extends StatefulWidget {
   final Film film;
@@ -68,7 +67,8 @@ class _SelectCinemaState extends State<SelectCinema> {
                   }
 
                   final cinemas = snapshot.data!;
-                  bioskop = cinemas[0];
+                  bioskop ??=
+                      cinemas[selectedCinema.clamp(0, cinemas.length - 1)];
 
                   return Padding(
                     padding: const EdgeInsets.all(16),

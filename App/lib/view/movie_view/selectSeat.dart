@@ -1,16 +1,9 @@
 import 'package:flutter_application_1/client/PenayanganClient.dart';
-import 'package:flutter_application_1/client/StudioClient.dart';
-import 'package:flutter_application_1/client/PenayanganClient.dart';
 import 'package:flutter_application_1/data/film.dart';
-import 'package:flutter_application_1/data/studio.dart';
 import 'package:flutter_application_1/data/penayangan.dart';
 import 'package:intl/intl.dart';
-import 'package:timezone/standalone.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/component/formComponent.dart';
 import 'package:flutter_application_1/utilities/constant.dart';
-import 'package:flutter_application_1/data/penayangan.dart';
 import 'package:flutter_application_1/data/bioskop.dart';
 import 'package:flutter_application_1/view/movie_view/payment.dart';
 
@@ -33,13 +26,11 @@ class _SelectSeatState extends State<SelectSeat> {
   int price = 50000;
   final formatter = NumberFormat('#,###');
 
-  DateTime selectedDate = DateTime(2024, 12, 12);
-  DateTime selectedTime = DateTime(2024, 12, 12, 7, 0);
-
-  int selectedIndexDate = 0;
-  int selectedIndexTime = 1;
+  DateTime? selectedDate;
+  int? selectedSesiId;
   late int id_film;
   late int id_bioskop;
+  int? activePenayanganId;
 
   List<dynamic> statusSeat = List.filled(100, 'available');
   List<int> selectedSeats = [];
@@ -47,27 +38,41 @@ class _SelectSeatState extends State<SelectSeat> {
   late Future<List<Penayangan>> penayangan;
   Penayangan? usedPenayangan;
 
+  @override
   void initState() {
     super.initState();
-    penayangan = PenayanganClient().fetchByFilm(widget.film!.id_film!);
-    id_film = widget.film!.id_film!;
-    id_bioskop = widget.bioskop!.idBioskop!;
+    penayangan = PenayanganClient().fetchByFilm(widget.film.id_film!);
+    id_film = widget.film.id_film!;
+    id_bioskop = widget.bioskop.idBioskop!;
     statusSeat = List.filled(100, 'available');
+  }
+
+  DateTime _normalizeDate(DateTime date) {
+    return DateTime(date.year, date.month, date.day);
+  }
+
+  String _formatSessionTime(String? time) {
+    if (time == null || time.length < 5) {
+      return '--:--';
+    }
+
+    return time.substring(0, 5);
   }
 
   Penayangan? searchPenayangan(List<Penayangan> datas, int id_bioskop,
       int id_film, int id_sesi, DateTime tanggal_tayang) {
-    // Iterasi untuk mencari penayangan yang sesuai
-    print(datas.map((d) => {d.tanggal_tayang}));
+    final normalizedSelectedDate = _normalizeDate(tanggal_tayang);
+
     for (var i = 0; i < datas.length; i++) {
       if (datas[i].bioskop!.idBioskop == id_bioskop &&
           datas[i].id_film == id_film &&
           datas[i].id_sesi == id_sesi &&
-          datas[i].tanggal_tayang.toString() == tanggal_tayang.toString()) {
-        return datas[i]; // Kembalikan penayangan yang ditemukan
+          datas[i].tanggal_tayang != null &&
+          _normalizeDate(datas[i].tanggal_tayang!) == normalizedSelectedDate) {
+        return datas[i];
       }
     }
-    // Jika tidak ada penayangan yang cocok, kembalikan null
+
     return null;
   }
 
@@ -75,6 +80,90 @@ class _SelectSeatState extends State<SelectSeat> {
     statusSeat = [];
     selectedSeats = [];
     statusSeat = List.filled(100, 'available');
+  }
+
+  List<Penayangan> _availableScreenings(List<Penayangan> datas) {
+    final screenings = datas.where((item) {
+      return item.bioskop?.idBioskop == id_bioskop &&
+          item.status == 'Available';
+    }).toList();
+
+    screenings.sort((a, b) {
+      final dateCompare = a.tanggal_tayang!.compareTo(b.tanggal_tayang!);
+      if (dateCompare != 0) {
+        return dateCompare;
+      }
+
+      return (a.id_sesi ?? 0).compareTo(b.id_sesi ?? 0);
+    });
+
+    return screenings;
+  }
+
+  void _ensureSelection(List<Penayangan> screenings) {
+    if (screenings.isEmpty) {
+      usedPenayangan = null;
+      activePenayanganId = null;
+      refreshSeat();
+      return;
+    }
+
+    final availableDates = screenings
+        .map((item) => _normalizeDate(item.tanggal_tayang!))
+        .fold<List<DateTime>>([], (dates, date) {
+      final exists = dates.any((item) => item == date);
+      if (!exists) {
+        dates.add(date);
+      }
+      return dates;
+    });
+
+    if (selectedDate == null ||
+        !availableDates.any((date) => date == _normalizeDate(selectedDate!))) {
+      selectedDate = availableDates.first;
+    }
+
+    final sessionsForDate = screenings
+        .where((item) =>
+            _normalizeDate(item.tanggal_tayang!) ==
+            _normalizeDate(selectedDate!))
+        .toList();
+
+    if (selectedSesiId == null ||
+        !sessionsForDate.any((item) => item.id_sesi == selectedSesiId)) {
+      selectedSesiId = sessionsForDate.first.id_sesi;
+    }
+
+    usedPenayangan = searchPenayangan(
+      screenings,
+      id_bioskop,
+      id_film,
+      selectedSesiId!,
+      selectedDate!,
+    );
+
+    if (usedPenayangan?.id_penayangan != activePenayanganId) {
+      activePenayanganId = usedPenayangan?.id_penayangan;
+      refreshSeat();
+
+      if (usedPenayangan != null &&
+          usedPenayangan!.nomor_kursi_terpakai != null &&
+          usedPenayangan!.nomor_kursi_terpakai!.isNotEmpty) {
+        final userSeat = usedPenayangan!.nomor_kursi_terpakai!
+            .split(',')
+            .where((seat) => seat.isNotEmpty)
+            .map((seat) => int.parse(seat))
+            .toList();
+
+        for (int i = 1; i <= 100; i++) {
+          if (userSeat.contains(i)) {
+            statusSeat[i - 1] = 'reserved';
+          }
+        }
+      }
+    }
+
+    price = (usedPenayangan?.harga_tiket ?? 50000).toInt();
   }
 
   @override
@@ -128,27 +217,10 @@ class _SelectSeatState extends State<SelectSeat> {
                   } else if (PenayanganSnapshot.hasData) {
                     final List<Penayangan> PenayanganData =
                         PenayanganSnapshot.data!;
-                    usedPenayangan = searchPenayangan(
-                        PenayanganData,
-                        id_bioskop!,
-                        id_film!,
-                        selectedIndexTime,
-                        selectedDate);
+                    final screenings = _availableScreenings(PenayanganData);
+                    _ensureSelection(screenings);
 
-                    if (usedPenayangan != null) {
-                      List<dynamic> userSeat = usedPenayangan!
-                          .nomor_kursi_terpakai!
-                          .split(',')
-                          .map((seat) => int.parse(seat))
-                          .toList();
-                      for (int i = 1; i <= 100; i++) {
-                        if (userSeat.contains(i)) {
-                          statusSeat[i - 1] = 'reserved';
-                        }
-                      }
-                    }
-
-                    return _mainWidget(PenayanganData);
+                    return _mainWidget(screenings);
                   } else {
                     return Center(
                         child: Text(
@@ -235,6 +307,23 @@ class _SelectSeatState extends State<SelectSeat> {
   }
 
   Widget _mainWidget(dataPenayangan) {
+    final List<Penayangan> screenings = List<Penayangan>.from(dataPenayangan);
+    final availableDates = screenings
+        .map((item) => _normalizeDate(item.tanggal_tayang!))
+        .fold<List<DateTime>>([], (dates, date) {
+      final exists = dates.any((item) => item == date);
+      if (!exists) {
+        dates.add(date);
+      }
+      return dates;
+    });
+    final sessionsForDate = screenings
+        .where((item) =>
+            selectedDate != null &&
+            _normalizeDate(item.tanggal_tayang!) ==
+                _normalizeDate(selectedDate!))
+        .toList();
+
     return Center(
       child: Padding(
         padding: EdgeInsets.all(10.0),
@@ -489,16 +578,17 @@ class _SelectSeatState extends State<SelectSeat> {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: List.generate(14, (index) {
+                      children: List.generate(availableDates.length, (index) {
+                        final date = availableDates[index];
                         return Row(
                           children: [
                             GestureDetector(
                               onTap: () {
                                 setState(() {
-                                  selectedDate =
-                                      DateTime(2024, 12, 12).add(Duration(days: index));
+                                  selectedDate = date;
                                   refreshSeat();
-                                  selectedIndexDate = index;
+                                  selectedSesiId = null;
+                                  activePenayanganId = null;
                                 });
                               },
                               child: Container(
@@ -506,7 +596,8 @@ class _SelectSeatState extends State<SelectSeat> {
                                 padding: EdgeInsets.only(
                                     top: 10, left: 3, right: 3, bottom: 3),
                                 decoration: BoxDecoration(
-                                  color: (selectedIndexDate == index
+                                  color: (selectedDate != null &&
+                                          _normalizeDate(selectedDate!) == date
                                       ? Colors.amber
                                       : Color.fromARGB(255, 44, 44, 44)),
                                   borderRadius:
@@ -516,10 +607,12 @@ class _SelectSeatState extends State<SelectSeat> {
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text(
-                                        "${DateFormat('MMM').format(DateTime(2024, 12, 12).add(Duration(days: index)))}",
+                                    Text(DateFormat('MMM').format(date),
                                         style: TextStyle(
-                                          color: (selectedIndexDate == index
+                                          color: (selectedDate != null &&
+                                                  _normalizeDate(
+                                                          selectedDate!) ==
+                                                      date
                                               ? Colors.black
                                               : Colors.white),
                                           fontSize: 15,
@@ -532,15 +625,16 @@ class _SelectSeatState extends State<SelectSeat> {
                                       alignment: Alignment.center,
                                       padding: EdgeInsets.all(12),
                                       decoration: BoxDecoration(
-                                        color: (selectedIndexDate == index
+                                        color: (selectedDate != null &&
+                                                _normalizeDate(selectedDate!) ==
+                                                    date
                                             ? const Color.fromARGB(
                                                 255, 32, 30, 30)
                                             : Color.fromARGB(255, 81, 81, 81)),
                                         borderRadius: BorderRadius.all(
                                             Radius.circular(100)),
                                       ),
-                                      child: Text(
-                                          "${DateFormat('dd').format(DateTime(2024, 12, 12).add(Duration(days: index)))}",
+                                      child: Text(DateFormat('dd').format(date),
                                           style: TextStyle(
                                               color: Colors.white,
                                               fontSize: 15,
@@ -561,14 +655,16 @@ class _SelectSeatState extends State<SelectSeat> {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: List.generate(5, (index) {
+                      children: List.generate(sessionsForDate.length, (index) {
+                        final screening = sessionsForDate[index];
                         return Row(
                           children: [
                             GestureDetector(
                               onTap: () {
                                 setState(() {
                                   refreshSeat();
-                                  selectedIndexTime = index + 1;
+                                  selectedSesiId = screening.id_sesi;
+                                  activePenayanganId = null;
                                 });
                               },
                               child: Container(
@@ -576,19 +672,20 @@ class _SelectSeatState extends State<SelectSeat> {
                                 padding: EdgeInsets.symmetric(
                                     vertical: 8, horizontal: 20),
                                 decoration: BoxDecoration(
-                                  color: (selectedIndexTime - 1 == index
+                                  color: (selectedSesiId == screening.id_sesi
                                       ? Colors.amber
                                       : Color.fromARGB(255, 44, 44, 44)),
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(30)),
                                 ),
                                 child: Text(
-                                    "${DateFormat('HH:mm').format(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 9, 30).add(Duration(minutes: 90*index)))} - ${DateFormat('HH:mm').format(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 11, 0).add(Duration(minutes: 90*index)))}",
+                                    "${_formatSessionTime(screening.sesi?.jam_mulai)} - ${_formatSessionTime(screening.sesi?.jam_selesai)}",
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      color: (selectedIndexTime - 1 == index
-                                          ? Colors.black
-                                          : Colors.white),
+                                      color:
+                                          (selectedSesiId == screening.id_sesi
+                                              ? Colors.black
+                                              : Colors.white),
                                       fontSize: 12,
                                     )),
                               ),
@@ -608,30 +705,6 @@ class _SelectSeatState extends State<SelectSeat> {
             // keterangan
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _debugText(dataPenayangan) {
-    final data = dataPenayangan!;
-
-    return Container(
-      child: Text(
-        "${widget.film.judul} \n"
-        "${widget.bioskop.namaBioskop} \n"
-        "${selectedSeats.toString()} \n"
-        "${data.isNotEmpty ? data[widget.film.id_film].tanggal_tayang : 'Tidak ada data'} \n"
-        "${statusSeat.toString()} \n" // Antisipasi jika data kosong
-        "${usedPenayangan == null ? "null" : usedPenayangan!.id_penayangan} \n"
-        "id bioskop : ${id_bioskop} id_film : ${id_film} selected index time : ${selectedIndexTime} selected date : ${selectedDate.toString()}",
-
-        style: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          color: Colors.white, // Asumsikan whiteColor adalah Colors.white
-        ),
-        softWrap: true, // Properti ini pada widget Text
-        overflow: TextOverflow.visible, // Pastikan teks tetap terlihat
       ),
     );
   }

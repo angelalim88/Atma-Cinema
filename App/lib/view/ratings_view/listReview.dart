@@ -160,8 +160,13 @@ class _RatingsAndReviewsViewState extends State<RatingsAndReviewsView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Ratings & Reviews"),
+        title: const Text(
+          "Ratings & Reviews",
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: darkColor,
+        iconTheme: const IconThemeData(color: Colors.white),
+        foregroundColor: Colors.white,
         elevation: 0,
       ),
       body: Column(

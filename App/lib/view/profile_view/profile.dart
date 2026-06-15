@@ -8,16 +8,33 @@ import 'package:flutter_application_1/view/profile_view/editProfile.dart';
 import 'package:flutter_application_1/view/profile_view/changePassword.dart';
 import 'package:flutter_application_1/view/ticket_view/ticketView.dart';
 
-class ShowProfile extends StatelessWidget {
+class ShowProfile extends StatefulWidget {
   final Map<String, dynamic> data;
 
   const ShowProfile({Key? key, required this.data}) : super(key: key);
+
+  @override
+  State<ShowProfile> createState() => _ShowProfileState();
+}
+
+class _ShowProfileState extends State<ShowProfile> {
+  late Map<String, dynamic> _profileData;
+
+  @override
+  void initState() {
+    super.initState();
+    _profileData = Map<String, dynamic>.from(widget.data);
+  }
 
   // Simulate fetching the profile picture URL asynchronously
   Future<String> fetchProfilePicture() async {
     await Future.delayed(
         const Duration(seconds: 2)); // Simulating network delay
-    return 'https://cinema88.fun/storage/app/public/profile_pictures/' + data['profile_picture'];
+    final profilePicture = _profileData['profile_picture'];
+    if (profilePicture == null || profilePicture.toString().isEmpty) {
+      return '';
+    }
+    return profilePicture.toString();
   }
 
   @override
@@ -60,6 +77,13 @@ class ShowProfile extends StatelessWidget {
                     child: Icon(Icons.error, color: Colors.white),
                   );
                 } else if (snapshot.hasData) {
+                  if (snapshot.data == null || snapshot.data!.isEmpty) {
+                    return const CircleAvatar(
+                      radius: 58,
+                      backgroundColor: Colors.grey,
+                      child: Icon(Icons.person, color: Colors.white, size: 40),
+                    );
+                  }
                   // Show the profile picture once it's loaded
                   return CircleAvatar(
                     radius: 58,
@@ -77,45 +101,58 @@ class ShowProfile extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              data['username'] ?? 'user1',
+              _profileData['username'] ?? 'user1',
               style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.white),
             ),
             const SizedBox(height: 20),
-            buildInfoText(
-                'Phone Number :', data['nomor_telepon'] ?? 'No Phone Number'),
+            buildInfoText('Phone Number :',
+                _profileData['nomor_telepon'] ?? 'No Phone Number'),
             const SizedBox(height: 10),
-            buildInfoText('Email :', data['email'] ?? 'No Email'),
+            buildInfoText('Email :', _profileData['email'] ?? 'No Email'),
             const SizedBox(height: 30),
             buildOptionButton(context, Icons.confirmation_number, 'My ticket',
                 () {
-             Navigator.push(
+              Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => TicketView(
-                      data: data), // Updated constructor parameter
+                      data: _profileData), // Updated constructor parameter
                 ),
               );
             }),
-            buildOptionButton(context, Icons.edit, 'Edit Profile', () {
-              Navigator.push(
+            buildOptionButton(context, Icons.edit, 'Edit Profile', () async {
+              final updatedUser = await Navigator.push<Map<String, dynamic>>(
                 context,
                 MaterialPageRoute(
                   builder: (context) => EditProfileView(
-                      data: data), // Updated constructor parameter
+                      data: _profileData), // Updated constructor parameter
                 ),
               );
+
+              if (updatedUser != null && mounted) {
+                setState(() {
+                  _profileData = Map<String, dynamic>.from(updatedUser);
+                });
+              }
             }),
-            buildOptionButton(context, Icons.lock, 'Change password', () {
-              Navigator.push(
+            buildOptionButton(context, Icons.lock, 'Change password', () async {
+              final updatedUser = await Navigator.push<Map<String, dynamic>>(
                 context,
                 MaterialPageRoute(
                   builder: (context) => ChangePasswordView(
-                      data: data), // Assuming ChangePasswordView needs formData
+                      data:
+                          _profileData), // Assuming ChangePasswordView needs formData
                 ),
               );
+
+              if (updatedUser != null && mounted) {
+                setState(() {
+                  _profileData = Map<String, dynamic>.from(updatedUser);
+                });
+              }
             }),
             const Spacer(),
             buildLogoutButton(context),

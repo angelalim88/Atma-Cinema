@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/utilities/constant.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter_application_1/view/profile_view/profile.dart';
 import 'package:flutter_application_1/client/UserClient.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
@@ -44,7 +43,11 @@ class _EditProfileViewState extends State<EditProfileView> {
   // This function simulates fetching the profile picture URL
   Future<String> fetchProfilePicture() async {
     // await Future.delayed(const Duration(seconds: 2)); // Simulating network delay
-    return 'https://cinema88.fun/storage/app/public/profile_pictures/' + data['profile_picture'];
+    final profilePicture = data['profile_picture'];
+    if (profilePicture == null || profilePicture.toString().isEmpty) {
+      return '';
+    }
+    return profilePicture.toString();
   }
 
   // Show options for choosing a photo from camera or gallery
@@ -98,7 +101,7 @@ class _EditProfileViewState extends State<EditProfileView> {
 
       // Call the updateUser method
       var response = await userClient.updateUser(
-        id_user : data['id_user'], // Make sure to pass the user ID
+        id_user: data['id_user'], // Make sure to pass the user ID
         username: username,
         email: email,
         nomor_telepon: phoneNumber,
@@ -115,12 +118,7 @@ class _EditProfileViewState extends State<EditProfileView> {
       );
 
       // Navigate to the profile view with updated data
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ShowProfile(data: response['user']),
-        ),
-      );
+      Navigator.pop(context, response['user']);
     } catch (e) {
       // Handle the error
       // Show failure toast
@@ -161,24 +159,23 @@ class _EditProfileViewState extends State<EditProfileView> {
           ),
         ),
         leading: GestureDetector(
-        onTap: () {
-          Navigator.of(context).pop();
-        },
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 0),
-              child: Icon(Icons.arrow_back_ios, color: lightColor),
-            ),
-            Text(
-              'Back',
-              style: TextStyle(color: lightColor),
-            ),
-          ],
+          onTap: () {
+            Navigator.of(context).pop();
+          },
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 0),
+                child: Icon(Icons.arrow_back_ios, color: lightColor),
+              ),
+              Text(
+                'Back',
+                style: TextStyle(color: lightColor),
+              ),
+            ],
+          ),
         ),
-      ),
-
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -202,6 +199,13 @@ class _EditProfileViewState extends State<EditProfileView> {
                           child: Icon(Icons.error, color: Colors.white),
                         );
                       } else if (snapshot.hasData) {
+                        if (snapshot.data == null || snapshot.data!.isEmpty) {
+                          return const CircleAvatar(
+                            radius: 58,
+                            backgroundColor: Colors.grey,
+                            child: Icon(Icons.person, color: Colors.white),
+                          );
+                        }
                         return CircleAvatar(
                           radius: 58,
                           backgroundImage: NetworkImage(snapshot.data!),

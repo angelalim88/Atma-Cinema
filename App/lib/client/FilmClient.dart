@@ -7,7 +7,7 @@ import 'package:flutter_application_1/setting/client.dart';
 
 class FilmClient {
   static final String url = constantURL;
-  static final String endpoint = '/public/api/films';
+  static final String endpoint = '/api/films';
 
   Future<List<Film>> fetchAll() async {
     try {

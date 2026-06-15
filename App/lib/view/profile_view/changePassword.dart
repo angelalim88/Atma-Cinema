@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/client/UserClient.dart';
 import 'package:flutter_application_1/utilities/constant.dart';
-import 'package:flutter_application_1/view/profile_view/changePassword.dart';
-import 'package:flutter_application_1/view/profile_view/profile.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class ChangePasswordView extends StatefulWidget {
@@ -70,12 +68,7 @@ class _ChangePasswordViewState extends State<ChangePasswordView> {
           new_password: new_password,
           confirm_password: confirm_password);
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ShowProfile(data: response['user']),
-        ),
-      );
+      Navigator.pop(context, response['user']);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to change password : $e')),

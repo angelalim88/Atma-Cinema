@@ -71,7 +71,7 @@ Route::post('/searchPenayangan', [PenayanganController::class, 'search']);
 
 // Tiket routes
 Route::get('/tikets/{id_user}', [TiketController::class, 'getByUser']);
-Route::get('/tikets/{id}', [TiketController::class, 'show']);
+Route::get('/tikets/detail/{id}', [TiketController::class, 'show']);
 Route::post('/tikets', [TiketController::class, 'store']);
 Route::put('/tikets/{id}', [TiketController::class, 'update']);
 Route::delete('/tikets/{id}', [TiketController::class, 'destroy']);
@@ -85,7 +85,7 @@ Route::delete('/transaksis/{id}', [TransaksiController::class, 'destroy']);
 
 // Review routes
 Route::get('/reviews/{id_film}', [ReviewController::class, 'index']);
-Route::get('/reviews/{id}', [ReviewController::class, 'show']);
+Route::get('/reviews/detail/{id}', [ReviewController::class, 'show']);
 Route::post('/reviews', [ReviewController::class, 'store']);
 Route::put('/reviews/{id}', [ReviewController::class, 'update']);
 Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);

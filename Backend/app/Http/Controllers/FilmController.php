@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Film;
+use App\Support\AssetUrl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -13,11 +14,8 @@ class FilmController extends Controller
     {
         $films = Film::all();
         $films->map(function ($film) {
-            // Menambahkan URL untuk poster_1
-            $film->poster_1 = 'http://10.0.2.2:8000/storage/poster_1/' . $film->poster_1;
-            
-            // Menambahkan URL untuk poster_2
-            $film->poster_2 = 'http://10.0.2.2:8000/storage/poster_2/' . $film->poster_2;
+            $film->poster_1 = AssetUrl::for('poster_1', $film->poster_1);
+            $film->poster_2 = AssetUrl::for('poster_2', $film->poster_2);
     
             return $film;
         });

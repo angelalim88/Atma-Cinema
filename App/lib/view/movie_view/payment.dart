@@ -10,7 +10,11 @@ class Payment extends StatefulWidget {
   final List<int> seats;
   final Map<String, dynamic> userData;
 
-  const Payment({super.key, required this.usedPenayangan, required this.seats, required this.userData});
+  const Payment(
+      {super.key,
+      required this.usedPenayangan,
+      required this.seats,
+      required this.userData});
 
   @override
   State<Payment> createState() => _PaymentState();
@@ -62,6 +66,52 @@ class _PaymentState extends State<Payment> {
     listSeat = convertSeatNumbers(widget.seats.whereType<int>().toList());
   }
 
+  Widget _buildPosterPreview() {
+    final posterUrl = widget.usedPenayangan.film?.poster_1;
+    final uri = posterUrl == null ? null : Uri.tryParse(posterUrl);
+    final canUseNetworkImage = uri != null &&
+        (uri.scheme == 'http' || uri.scheme == 'https') &&
+        uri.host.isNotEmpty;
+
+    if (!canUseNetworkImage) {
+      return Container(
+        width: 100,
+        height: 140,
+        decoration: BoxDecoration(
+          color: const Color.fromARGB(255, 34, 34, 34),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(
+          Icons.local_movies,
+          color: Colors.white,
+          size: 40,
+        ),
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Image.network(
+        posterUrl!,
+        width: 100,
+        height: 140,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            width: 100,
+            height: 140,
+            color: const Color.fromARGB(255, 34, 34, 34),
+            child: const Icon(
+              Icons.broken_image_outlined,
+              color: Colors.white,
+              size: 40,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -102,8 +152,7 @@ class _PaymentState extends State<Payment> {
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Image.network("${widget.usedPenayangan.film!.poster_1}",
-                              width: 100, height: 140),
+                          _buildPosterPreview(),
                           Padding(
                             padding: const EdgeInsets.symmetric(
                                 vertical: 10, horizontal: 15),
@@ -477,12 +526,15 @@ class _PaymentState extends State<Payment> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => PaymentSuccess(
-                        listSeats: listSeat,
-                        penayangan: widget.usedPenayangan,
-                        userData: widget.userData,
-                        seats: widget.seats,
-                        metode_pembayaran: selectedPayment,
-                        nominal_pembayaran: (widget.usedPenayangan.harga_tiket.toDouble()*widget.seats.length),),
+                      listSeats: listSeat,
+                      penayangan: widget.usedPenayangan,
+                      userData: widget.userData,
+                      seats: widget.seats,
+                      metode_pembayaran: selectedPayment,
+                      nominal_pembayaran:
+                          (widget.usedPenayangan.harga_tiket.toDouble() *
+                              widget.seats.length),
+                    ),
                   ),
                 );
               },

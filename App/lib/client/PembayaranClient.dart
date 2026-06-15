@@ -6,7 +6,7 @@ import 'package:flutter_application_1/setting/client.dart';
 
 class Pembayaranclient {
   static final String url = constantURL;
-  static final String endpoint = '/public/api/pembayarans';
+  static final String endpoint = '/api/pembayarans';
 
   Future<List<Pembayaran>> fetchAll() async {
     try {

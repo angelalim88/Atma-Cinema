@@ -6,7 +6,7 @@ import 'package:flutter_application_1/setting/client.dart';
 
 class Transaksiclient {
   static final String url = constantURL;
-  static final String endPoint = '/public/api/transaksis';
+  static final String endPoint = '/api/transaksis';
 
   Future<List<Transaksi>> fetchAll() async {
     try {

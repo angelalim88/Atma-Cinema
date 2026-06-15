@@ -12,10 +12,73 @@ class FilmDetail extends StatelessWidget {
   const FilmDetail({required this.film, required this.userData, Key? key})
       : super(key: key);
 
-  @override
+  Future<void> _launchTrailer(BuildContext context) async {
+    final rawUrl = film.trailer;
+
+    if (rawUrl == null || rawUrl.isEmpty) {
+      return;
+    }
+
+    final url = Uri.tryParse(rawUrl);
+    if (url == null) {
+      return;
+    }
+
+    final candidates = <Uri>[];
+    final videoId = _extractYoutubeVideoId(url);
+
+    if (videoId != null) {
+      candidates.add(Uri.parse('vnd.youtube:$videoId'));
+      candidates.add(Uri.parse('https://www.youtube.com/watch?v=$videoId'));
+    } else if (url.host.contains('youtube.com') &&
+        url.path == '/results' &&
+        url.queryParameters['search_query'] != null) {
+      final query = url.queryParameters['search_query']!;
+      candidates.add(Uri.parse(
+          'https://m.youtube.com/results?search_query=${Uri.encodeQueryComponent(query)}'));
+      candidates.add(url);
+    } else {
+      candidates.add(url);
+    }
+
+    for (final candidate in candidates) {
+      if (await launchUrl(candidate, mode: LaunchMode.externalApplication)) {
+        return;
+      }
+    }
+
+    for (final candidate in candidates) {
+      if (await launchUrl(candidate, mode: LaunchMode.platformDefault)) {
+        return;
+      }
+    }
+
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Trailer tidak bisa dibuka di device ini.'),
+        ),
+      );
+    }
+  }
+
+  String? _extractYoutubeVideoId(Uri url) {
+    if (url.host.contains('youtu.be')) {
+      final segments = url.pathSegments;
+      return segments.isEmpty ? null : segments.first;
+    }
+
+    if (url.host.contains('youtube.com')) {
+      return url.queryParameters['v'];
+    }
+
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final isComingSoon = film.status == 'Coming Soon';
 
     return Scaffold(
       appBar: AppBar(
@@ -40,7 +103,7 @@ class FilmDetail extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildHeroSection(size),
+            _buildHeroSection(context, size),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
@@ -53,9 +116,12 @@ class FilmDetail extends StatelessWidget {
                   const SizedBox(height: 16),
                   _buildDetailsSection(),
                   const SizedBox(height: 20),
-                  _buildRatingsAndReviews(context),
-                  const SizedBox(height: 20),
-                  _buildBookNowButton(context),
+                  if (!isComingSoon) ...[
+                    _buildRatingsAndReviews(context),
+                    const SizedBox(height: 20),
+                    _buildBookNowButton(context),
+                  ] else
+                    _buildComingSoonNotice(),
                 ],
               ),
             ),
@@ -65,7 +131,7 @@ class FilmDetail extends StatelessWidget {
     );
   }
 
-  Widget _buildHeroSection(Size size) {
+  Widget _buildHeroSection(BuildContext context, Size size) {
     return Stack(
       children: [
         // Full-width Image
@@ -84,14 +150,7 @@ class FilmDetail extends StatelessWidget {
           right: 8,
           child: ElevatedButton.icon(
             onPressed: () async {
-              if (film.trailer != null && film.trailer!.isNotEmpty) {
-                final Uri url = Uri.parse(film.trailer!);
-                if (await canLaunchUrl(url)) {
-                  await launchUrl(url);
-                } else {
-                  debugPrint("Cannot launch trailer URL");
-                }
-              }
+              await _launchTrailer(context);
             },
             icon: const Icon(Icons.play_arrow, color: Colors.white),
             label: const Text(
@@ -315,7 +374,11 @@ class FilmDetail extends StatelessWidget {
       onPressed: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => SelectCinema(film: film, userData: userData,)),
+          MaterialPageRoute(
+              builder: (context) => SelectCinema(
+                    film: film,
+                    userData: userData,
+                  )),
         );
       },
       style: ElevatedButton.styleFrom(
@@ -337,6 +400,41 @@ class FilmDetail extends StatelessWidget {
               fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Colors.black, // Set the text color to black
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildComingSoonNotice() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.black26,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: const Column(
+        children: [
+          Icon(Icons.schedule, color: Colors.amber, size: 38),
+          SizedBox(height: 10),
+          Text(
+            "Coming Soon",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            "Review dan booking akan tersedia saat film resmi tayang.",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.white70,
+              height: 1.4,
             ),
           ),
         ],
